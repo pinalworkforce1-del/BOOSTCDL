@@ -186,6 +186,20 @@ function boostOfferCompletion(moduleId,mount){
 function boostIndustryCompletion(moduleId,mount){
   const evidence={completed:true,sector:moduleId.replace('industry-',''),alignment:Math.round(score/(Q.length*100)*100),fitBefore:preFit,fitAfter:postFit,scenarioCount:Q.length,completedAt:new Date().toISOString(),participant:document.getElementById('participantName')?.value?.trim()||''};
   if(window.parent===window){boostOfferCompletion(moduleId,mount);return;}
+
+  // Capture the actual report evidence, rather than only the completion receipt.
+  try{
+    evidence.alignmentLabel=document.getElementById('label')?.textContent?.trim()||'';
+    evidence.interest=document.getElementById('interest')?.value||'';
+    evidence.environmentFit=document.getElementById('env')?.value||'';
+    evidence.nextExperience=document.getElementById('nextExp')?.value||'';
+    evidence.skillScores=Object.entries(SK).map(([key,name])=>({name,score:Math.round(skillPct(key))}));
+    evidence.technicalExposure=EXPOSURE.map((name,i)=>({name,value:document.getElementById('exp'+i)?.value||'Not recorded'}));
+    evidence.strongSignals=signalScores().slice(0,2).map(x=>x.name);
+    evidence.reportTakeaway=document.getElementById('take')?.textContent?.trim()||'';
+    evidence.coachReflection=document.getElementById('change')?.querySelector('.coachCue')?.textContent?.trim()||'';
+    evidence.exploredSkills=Object.values(explored).filter(Boolean).length;
+  }catch(err){console.warn('Detailed industry report capture unavailable',err);}
   const send=(saveRequested)=>window.parent.postMessage({type:'boost-industry-challenge-completed',module:moduleId,evidence,saveRequested:!!saveRequested},'*');
   let box=document.getElementById('boostCompletionReturn');
   if(!box){box=document.createElement('div');box.id='boostCompletionReturn';box.style.cssText='margin:20px 0;padding:20px;border:3px solid #16835b;border-radius:16px;background:#effff7;text-align:center';mount.appendChild(box);}
